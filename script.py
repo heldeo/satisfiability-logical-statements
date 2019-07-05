@@ -72,4 +72,4 @@ class LogicalParser:
 
 
 
-lp = LogicalParser()
+program_start = LogicalParser()
