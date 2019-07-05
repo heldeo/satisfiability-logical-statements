@@ -21,4 +21,4 @@ def MakeQueueFromTokenz(tokenizedInput):
 inputToQueue = MakeQueueFromTokenz(MakeTokenz(firstTestString))
 for i in range(inputToQueue.qsize()):
     print(inputToQueue.get(), end = " ")
-
+    print("Seocnd Commit")
