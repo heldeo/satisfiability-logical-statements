@@ -26,6 +26,17 @@ class LogicalParser:
 
         self.button.pack()
         self.window.mainloop()
+    def ParanthesisChecker(tokenizedInput):
+        parens = "()"
+        leftParen = 0
+        rightParen= 0
+        balanceCheck = lambda l,r: True if l==r else False
+        for token in tokenizedInput:
+            if token == "(":
+                leftParen+=1
+            if token == ")":
+                rightParen+=1
+        return balanceCheck(leftParen,rightParen)
     def MakeTokenz(inputString):
 
         tokenized_clean = []
@@ -42,30 +53,45 @@ class LogicalParser:
 
 
     def validInputChecker(self,inputFromPrompt):
-        operatorCounter = 0
-        variableCounter = 0
-        operators = "^v>"
-        parens = "()"
-        previous = ""
         variables = "abcdefghijklmnopqrstuwxyz"
+        operators = "^v>"
+        listedVariables = iter(list(variables))
+        listedOperators = iter(list(operators))
+        hashOfVarsAndOps = {}
+        [hashOfVarsAndOps.setdefault(next(listedVariables), list(operators)) for i in range(len(list(variables)) )]
+        [hashOfVarsAndOps.setdefault(next(listedOperators) , list(variables)) for j in range(len(list(operators))) ]
+        illegal = "()!"
+        previous = ""
         tokenizedInput = LogicalParser.MakeTokenz(inputFromPrompt)
-        for item in tokenizedInput:
-            if item in parens:
-                previous = ""
-                continue
-            if item in operators:
-                operatorCounter+=1
-            if item in variables:
-                variableCounter+=1
-            previous = item
-        if(operatorCounter == 0 and variableCounter ==0):
-            print("no input . . .")
-        elif( (operatorCounter*2) == variableCounter):
-            self.outLabel['text'] = "MainParser!"
+        validOut = LogicalParser.ParanthesisChecker(tokenizedInput)
 
+        tokenizedInputRaw = [item for item in tokenizedInput if item not in illegal]
+        tokenizedInputRaw.append("`")
+        for i in range(0, len(tokenizedInputRaw), 2):
+            if(tokenizedInputRaw[i] == "`" or tokenizedInputRaw[i+1] == "`"):
+                break
+            if tokenizedInputRaw[i] not in hashOfVarsAndOps[tokenizedInputRaw[i+1]]:
+                validOut = False
+                break
+            if(tokenizedInputRaw[i+1] not in hashOfVarsAndOps[tokenizedInputRaw[i+2]]    ):
+                validOut = False
+                break
+
+        if(validOut and len(tokenizedInputRaw) !=1):
+            self.outLabel["text"] = "Valid Input . . ."
         else:
             self.outLabel["text"] = "Invalid Input"
-
+    def ParanthesisChecker(tokenizedInput):
+        parens = "()"
+        leftParen = 0
+        rightParen= 0
+        balanceCheck = lambda l,r: True if l==r else False
+        for token in tokenizedInput:
+            if token == "(":
+                leftParen+=1
+            if token == ")":
+                rightParen+=1
+        return balanceCheck(leftParen,rightParen)
 
 
 
