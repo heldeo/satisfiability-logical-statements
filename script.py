@@ -1,6 +1,8 @@
 from nltk import *
 from queue import Queue as Q
 import tkinter
+import numpy as np
+import copy
 
 class LogicalParser:
     def __init__(self):
@@ -55,34 +57,42 @@ class LogicalParser:
     def validInputChecker(self,inputFromPrompt):
         variables = "abcdefghijklmnopqrstuwxyz"
         operators = "^v>"
+        numOfVars = 0
         listedVariables = iter(list(variables))
         listedOperators = iter(list(operators))
         hashOfVarsAndOps = {}
         [hashOfVarsAndOps.setdefault(next(listedVariables), list(operators)) for i in range(len(list(variables)) )]
         [hashOfVarsAndOps.setdefault(next(listedOperators) , list(variables)) for j in range(len(list(operators))) ]
         illegal = "()!"
-        previous = ""
         tokenizedInput = LogicalParser.MakeTokenz(inputFromPrompt)
         validOut = LogicalParser.ParanthesisChecker(tokenizedInput)
-
+        used = []
         tokenizedInputRaw = [item for item in tokenizedInput if item not in illegal]
         tokenizedInputRaw.append("`")
+        if (len(tokenizedInput) == 2 and tokenizedInput[0] != "!"):
+            validOut = False
         for i in range(0, len(tokenizedInputRaw), 2):
+            if tokenizedInputRaw[i] in variables and tokenizedInputRaw[i] not in used:
+                numOfVars = numOfVars + 1
+                used.append(tokenizedInputRaw[i])
             if(tokenizedInputRaw[i] == "`" or tokenizedInputRaw[i+1] == "`"):
                 break
             if tokenizedInputRaw[i] not in hashOfVarsAndOps[tokenizedInputRaw[i+1]]:
+
                 validOut = False
                 break
             if(tokenizedInputRaw[i+1] not in hashOfVarsAndOps[tokenizedInputRaw[i+2]]    ):
                 validOut = False
                 break
 
+
         if(validOut and len(tokenizedInputRaw) !=1):
             self.outLabel["text"] = "Valid Input . . ."
+            self.NaiveSearch(LogicalParser.MakeQueueFromTokenz(tokenizedInput),numOfVars)
+
         else:
             self.outLabel["text"] = "Invalid Input"
     def ParanthesisChecker(tokenizedInput):
-        parens = "()"
         leftParen = 0
         rightParen= 0
         balanceCheck = lambda l,r: True if l==r else False
@@ -92,10 +102,38 @@ class LogicalParser:
             if token == ")":
                 rightParen+=1
         return balanceCheck(leftParen,rightParen)
+    def NaiveSearch(self,tokenizedQueue,numOfVars):
 
+        copyOfTokenizedQueue = Q.PriorityQueue()
 
-
-
+        listOfTokenz = [copyOfTokenizedQueue.get() for i in range( tokenizedQueue.qsize()) ]
+        setOfNums = set(listOfTokenz)
+        illegalChars = ['^','v','>','(',')']
+        discardThatWorks = lambda set,char: set.discard(char)
+        [discardThatWorks(setOfNums,illegalChars[i]) for i in range(len(illegalChars))]
+        VarTFTable = LogicalParser.CreateVariableDefintions( len(setOfNums))
+        print(tokenizedQueue.qsize())
+    def CreateVariableDefintions(numOfVars):
+        print("in parsing ", numOfVars)
+        boolCollection = np.ndarray((2 ** numOfVars, numOfVars))
+        modolusSwitch = True
+        modolusOp = (1 / 2) * (2 ** numOfVars)
+        for i in range(len(boolCollection)):
+            for j in range(len(boolCollection[i])):
+                boolCollection[i][j] = False
+        boolCollection = boolCollection.copy()
+        for i in range(numOfVars):
+            for j in range(1, (2 ** numOfVars) + 1):
+                if (modolusSwitch):
+                    boolCollection.__getitem__(j-1).__setitem__(i,True)
+                if (j % modolusOp == 0):
+                    modolusSwitch = not modolusSwitch
+            modolusSwitch = True
+            modolusOp /= 2
+        return boolCollection
+    def VarOrOp(token):
+        variables = "abcdefghijklmnopqrstuwxyz"
+        operators = "^v>"
 
 
 program_start = LogicalParser()
