@@ -1,7 +1,9 @@
 from nltk import *
 from queue import Queue as Q
+from queue import LifoQueue as LQ
 import tkinter
 import numpy as np
+from OperatorClass import *
 import copy
 
 class LogicalParser:
@@ -69,8 +71,11 @@ class LogicalParser:
         used = []
         tokenizedInputRaw = [item for item in tokenizedInput if item not in illegal]
         tokenizedInputRaw.append("`")
-        if (len(tokenizedInput) == 2 and tokenizedInput[0] != "!"):
+
+        if (len(tokenizedInput) == 2 and tokenizedInput[0] != "!" and tokenizedInput[1]in operators):
             validOut = False
+            self.outLabel["text"] = "Invalid Input"
+
         for i in range(0, len(tokenizedInputRaw), 2):
             if tokenizedInputRaw[i] in variables and tokenizedInputRaw[i] not in used:
                 numOfVars = numOfVars + 1
@@ -87,7 +92,7 @@ class LogicalParser:
 
 
         if(validOut and len(tokenizedInputRaw) !=1):
-            self.outLabel["text"] = "Valid Input . . ."
+            print("Valid Input . . .")
             self.NaiveSearch(LogicalParser.MakeQueueFromTokenz(tokenizedInput),numOfVars)
 
         else:
@@ -104,15 +109,42 @@ class LogicalParser:
         return balanceCheck(leftParen,rightParen)
     def NaiveSearch(self,tokenizedQueue,numOfVars):
 
-        copyOfTokenizedQueue = Q.PriorityQueue()
-
-        listOfTokenz = [copyOfTokenizedQueue.get() for i in range( tokenizedQueue.qsize()) ]
-        setOfNums = set(listOfTokenz)
-        illegalChars = ['^','v','>','(',')']
+        listOfTokenz = [tokenizedQueue.get() for i in range( tokenizedQueue.qsize()) ]
+        tokenizedQueue = LogicalParser.MakeQueueFromTokenz(listOfTokenz)
+        setOfVars = set(listOfTokenz)
+        listOfTokenzNonRepeat = list(setOfVars)
+        illegalChars = ['^','v','>','(',')','!']
+        Variables = "abcdefghijklmnopqrstuwxyz"
+        OperatorS = illegalChars
         discardThatWorks = lambda set,char: set.discard(char)
-        [discardThatWorks(setOfNums,illegalChars[i]) for i in range(len(illegalChars))]
-        VarTFTable = LogicalParser.CreateVariableDefintions( len(setOfNums))
-        print(tokenizedQueue.qsize())
+        [discardThatWorks(setOfVars,illegalChars[i]) for i in range(len(illegalChars))]
+        VarTFTable = LogicalParser.CreateVariableDefintions( len(setOfVars))
+        equationObjects = []
+        while(tokenizedQueue.qsize() != 0):
+            currVar = tokenizedQueue.get()
+            if(currVar == '!'):
+                nextVar = tokenizedQueue.get()
+                equationObjects.append(Variable(nextVar,False, True))
+            elif(currVar in OperatorS):
+                equationObjects.append(Operator(currVar))
+            elif(currVar in Variables):
+                equationObjects.append( Variable(currVar,False,False))
+        print(equationObjects)
+        print(VarTFTable)
+        tokenizedQueueSearch = LogicalParser.MakeQueueFromTokenz(equationObjects)
+        print(LogicalParser.GetResult(tokenizedQueueSearch))
+
+
+
+
+    def GetResult(tokenizedQueueSearch):
+        stagingObj = Stage()
+        while (tokenizedQueueSearch.empty() != True):
+            if (stagingObj.Full()):
+                stagingObj.Result(Operation.Simplify(stagingObj))
+            stagingObj.push(tokenizedQueueSearch.get())
+        return stagingObj.FinalVal()
+
     def CreateVariableDefintions(numOfVars):
         print("in parsing ", numOfVars)
         boolCollection = np.ndarray((2 ** numOfVars, numOfVars))
