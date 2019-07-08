@@ -5,18 +5,12 @@ class Stage:
         self.operation = None
     def push(self,equationObject):
         if(self.leftVar == None):
-            if (equationObject.Neg):
-                self.leftVar = not equationObject.valueTF
-            else:
-                self.leftVar = equationObject.valueTF
+            self.leftVar = equationObject
 
         elif(self.operation == None):
             self.operation = equationObject.operator
         elif(self.rightVar == None):
-            if(equationObject.Neg):
-                self.rightVar = not equationObject.valueTF
-            else:
-                self.rightVar = equationObject.valueTF
+            self.rightVar = equationObject
 
     def Full(self):
         return True if self.rightVar != None else False
@@ -24,22 +18,27 @@ class Stage:
         return True if self.rightVar == None else False
 
     def Result(self,simplifiedLeftVal):
-        self.leftVar = simplifiedLeftVal
+
+        self.leftVar.setValueTF(simplifiedLeftVal)
         self.operation = None
         self.rightVar = None
     def FinalVal(self):
-        return self.leftVar
+        return self.leftVar.valueTF
+    def __repr__(self):
+        return '{} {} {}'.format(self.leftVar,self.operation,self.rightVar)
 
 class Operation:
     def Simplify(StageObject):
+
         Conjunction = lambda varLeft,varRight:  bool(varLeft and varRight)
         Disjunction = lambda varLeft,varRight:  bool(varLeft or varRight)
-        Conditional = lambda varLeft, VarRight: bool(True if varLeft else VarRight)
+        Conditional = lambda varLeft, VarRight: bool(not (varLeft) or VarRight)
         operations = {'^': Conjunction, 'v': Disjunction, ">": Conditional}
         operation = operations[StageObject.operation]
-        return operation(StageObject.leftVar,StageObject.rightVar)
-
-
+        print("OPEration: ", StageObject.leftVar.valueTF,StageObject.rightVar.valueTF)
+        TF = operation(StageObject.leftVar.valueTF,StageObject.rightVar.valueTF)
+        print("TF:" ,TF)
+        return TF
 class Variable:
 
     def __init__(self,variable, valueTF,Neg):
