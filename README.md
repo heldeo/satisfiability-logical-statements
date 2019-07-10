@@ -4,7 +4,7 @@
 
 
 Parses a logical statement and defines variables such that a logical statement is satisfied, else declares unsatisfiability.
-Paranthesis are valid and normal order of operations are followed
+
 
 
 *Operators*:
