@@ -21,6 +21,7 @@ v (lowercase) for disjunction ( do not use v -or V- as a variable)
 
 
 *Valid input examples:*
+
 !p^p
 
 p^q^r^svr
