@@ -21,18 +21,12 @@ v (lowercase) for disjunction ( do not use v -or V- as a variable)
 
 
 *Valid input examples:*
-
-
+!p^p
 
 p^q^r^svr
-
-
-(p^q)^(r>s)
 
 
 p    ^ q >r (space agnostic)
 
 
-
-*Time Complexity analysis*:
 
